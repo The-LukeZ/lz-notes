@@ -23,11 +23,13 @@ jobs:
               - 'db/schema.sql'
               - 'pnpm-lock.yaml'
               - 'pnpm-workspace.yaml'
+              - '.github/workflows/deploy.yml'
             consumer:
               - 'consumer/**'
               - 'db/schema.sql'
               - 'pnpm-lock.yaml'
               - 'pnpm-workspace.yaml'
+              - '.github/workflows/deploy.yml'
 
   deploy-web:
     needs: changes
@@ -38,14 +40,11 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
-      - uses: pnpm/action-setup@v6
-
-      - uses: actions/setup-node@v6
+      - uses: pnpm/setup@v2
         with:
-          node-version: 24
-          cache: pnpm
-
-      - run: pnpm install --frozen-lockfile
+          version: 11
+          runtime: node@24
+          cache: true
 
       - run: pnpm --filter lz-notes-web deploy
         env:
@@ -61,14 +60,11 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
-      - uses: pnpm/action-setup@v6
-
-      - uses: actions/setup-node@v6
+      - uses: pnpm/setup@v2
         with:
-          node-version: 24
-          cache: pnpm
-
-      - run: pnpm install --frozen-lockfile
+          version: 11
+          runtime: node@24
+          cache: true
 
       - run: pnpm --filter lz-notes-consumer deploy
         env:
