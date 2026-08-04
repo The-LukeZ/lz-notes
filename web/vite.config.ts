@@ -14,6 +14,14 @@ export default defineConfig({
       },
       adapter: adapter({
         config: "./wrangler.jsonc",
+        platformProxy: {
+          // Shared with `consumer/` (see its `pnpm dev` script) so both
+          // workers see the same local D1/R2 data in dev — otherwise each
+          // `wrangler`/proxy instance defaults to its own package-local
+          // `.wrangler/state` and meetings written by one are invisible to
+          // the other.
+          persist: { path: "../.wrangler/state" },
+        },
       }),
     }),
     // SvelteKitPWA({

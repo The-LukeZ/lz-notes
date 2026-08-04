@@ -141,3 +141,7 @@ dist
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 .vite/
+
+# wrangler local dev state (shared by web/ + consumer/, see web/vite.config.ts
+# and consumer/package.json's dev script)
+.wrangler/
