@@ -67,10 +67,25 @@ and fill in the key.
 ### 3. Run / typecheck / deploy
 
 ```sh
-pnpm dev       # web app (vite dev) — emulates bindings from wrangler.jsonc
-pnpm check     # typecheck both packages
-pnpm deploy    # deploy web + consumer
+pnpm dev           # web app (vite dev) — emulates bindings from wrangler.jsonc
+pnpm check         # typecheck both packages
+pnpm format:check  # prettier --check . (also runs on pre-push, see below)
+pnpm deploy        # deploy web + consumer (manual; CI does this on push to main, see below)
 ```
+
+### 4. Git hooks
+
+Husky runs on `pnpm install` (`prepare` script). Pre-push hook runs
+`pnpm format:check` then `pnpm check` — push is blocked if either fails.
+Fix locally with `pnpm format` / `pnpm check`.
+
+## CI/CD
+
+`.github/workflows/deploy.yml` deploys on push to `main`. Each package
+deploys independently — `web` only if `web/**` (or shared `db/schema.sql`
+/ lockfile) changed, `consumer` only if `consumer/**` (or those shared
+paths) changed. Needs `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID`
+repo secrets.
 
 ## ⚠️ Before trusting transcription: verify the response shape
 

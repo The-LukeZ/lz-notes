@@ -30,8 +30,9 @@ pnpm install
 pnpm dev            # web app only (vite dev, emulates bindings from wrangler.jsonc)
 pnpm check           # typecheck both packages (wrangler types + svelte-check / tsc)
 pnpm build            # build web then consumer
-pnpm deploy            # deploy web + consumer
+pnpm deploy            # deploy web + consumer (manual; CI also does this per-package, see below)
 pnpm format             # prettier --write .
+pnpm format:check        # prettier --check . — also runs on pre-push
 pnpm db:apply             # apply db/schema.sql to remote D1
 ```
 
@@ -44,6 +45,19 @@ pnpm gen      # wrangler types — regenerate worker-configuration.d.ts after wr
 ```
 
 No test suite exists in this repo currently.
+
+### Git hooks / CI
+
+Husky (`prepare` script, runs on `pnpm install`) sets a pre-push hook:
+`pnpm format:check` then `pnpm check`, blocks push if either fails.
+
+`.github/workflows/deploy.yml` deploys on push to `main`, one job per
+package, path-filtered via `dorny/paths-filter` so `web` only redeploys on
+`web/**` changes (+ shared `db/schema.sql`/lockfile) and `consumer` only on
+`consumer/**` (+ same shared paths). Each job installs via `pnpm/setup@v2`
+(pnpm v11 self-contained binary + Node 24 in one step) then runs the
+package's own `deploy` script. Needs `CLOUDFLARE_API_TOKEN` and
+`CLOUDFLARE_ACCOUNT_ID` repo secrets.
 
 ## Architecture
 
