@@ -1,4 +1,7 @@
 // See https://svelte.dev/docs/kit/types#app.d.ts
+
+import type { NotesRepository } from "$lib/server/db";
+
 // for information about these interfaces
 declare global {
   namespace App {
