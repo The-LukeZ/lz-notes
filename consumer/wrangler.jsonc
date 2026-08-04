@@ -3,7 +3,7 @@
   "name": "lz-notes-consumer",
   "main": "src/index.ts",
   "account_id": "92d72ac72fb811275ce6e8d5263a9816",
-  "compatibility_date": "2026-08-04",
+  "compatibility_date": "2026-07-28",
   "compatibility_flags": ["nodejs_compat"],
   "observability": {
     "enabled": true,

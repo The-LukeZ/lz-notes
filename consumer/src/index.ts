@@ -8,6 +8,9 @@ import type { TranscribeBatch, TranscribeJob } from "./env";
 // active compute, not time spent awaiting fetch(), so idle-waiting on Mistral is
 // cheap here (PLAN §1).
 export default {
+  fetch(_request, _env, _ctx) {
+    return new Response("lz-notes consumer worker");
+  },
   async queue(batch: TranscribeBatch, env: Env): Promise<void> {
     const repo = new NotesRepository(env.DB);
 
