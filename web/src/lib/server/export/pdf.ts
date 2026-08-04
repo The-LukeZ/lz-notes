@@ -34,13 +34,7 @@ function styleFor(block: Block): Style {
 
 // Greedy word-wrap over mixed bold/regular spans: flattens to words (each
 // tagged with its font weight) and packs them onto lines within maxWidth.
-function wrapSpans(
-  spans: Span[],
-  regular: PDFFont,
-  bold: PDFFont,
-  size: number,
-  maxWidth: number,
-): Span[][] {
+function wrapSpans(spans: Span[], regular: PDFFont, bold: PDFFont, size: number, maxWidth: number): Span[][] {
   const words: Span[] = [];
   for (const span of spans) {
     for (const word of span.text.split(/\s+/).filter(Boolean)) {

@@ -33,7 +33,9 @@ export default {
         const object = await env.AUDIO_BUCKET.get(meeting.audio_key);
         if (!object) throw new Error(`Audio object not found: ${meeting.audio_key}`);
         const audio = await object.arrayBuffer();
-        console.log(`[consumer] audio fetched meeting=${meeting.id} bytes=${audio.byteLength}, calling mistral`);
+        console.log(
+          `[consumer] audio fetched meeting=${meeting.id} bytes=${audio.byteLength}, calling mistral`
+        );
 
         const segments = await transcribeAudio(env.MISTRAL_API_KEY, audio, meeting.audio_key);
         console.log(`[consumer] transcription done meeting=${meeting.id} segments=${segments.length}`);
