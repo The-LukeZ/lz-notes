@@ -116,16 +116,20 @@ PDF are generated from it on demand:
 - `pdf.ts` — `Block[]` -> `pdf-lib`, hand-rolled pagination/word-wrap (no
   markdown/HTML support in `pdf-lib`).
 
-### ⚠️ Known unverified area
+### Mistral transcription endpoint
 
-`consumer/src/mistral.ts`'s `parseTranscriptionResponse` is a best-guess
-parser assuming an OpenAI-style `{ segments: [{ speaker, text, start, end }]
-}` shape from Mistral's diarized transcription response — this was **not**
-confirmed against a real API response during planning. It logs the raw
-response and throws clearly on mismatch rather than silently producing
-garbage. Before trusting transcription output, make one real call against a
-short multi-speaker clip and fix the field names against the actual shape
-(see README "Before trusting transcription" and `PLAN.md` §1/§10).
+`consumer/src/mistral.ts` calls `POST /v1/audio/transcriptions` with
+`diarize: true`, `timestamp_granularities: ["segment"]`. Response shape is
+top-level `segments[]` with `text` / `start` / `end` / `speaker_id` per
+segment — confirmed against Mistral's docs and matched by
+`parseTranscriptionResponse`. Not yet confirmed against a live response, so
+it still logs the raw response and throws clearly on shape mismatch instead
+of producing garbage.
+
+⚠️ Auth header for this endpoint is `x-api-key: $MISTRAL_API_KEY`, **not**
+`Authorization: Bearer` — differs from the chat-completions endpoint (used
+for note generation), which does use Bearer. Don't copy the header pattern
+across the two.
 
 ## Conventions
 

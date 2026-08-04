@@ -1,5 +1,5 @@
 import { PDFDocument, StandardFonts, rgb, type PDFFont, type PDFPage } from "pdf-lib";
-import { parseMarkdownBlocks, type Block } from "./parse";
+import { parseMarkdownBlocks, type Block, type Span } from "./parse";
 
 // Block[] -> PDF bytes (PLAN §8). pdf-lib has no markdown/HTML support, so
 // pagination and word-wrap are hand-rolled. Kept deliberately simple: two fonts
@@ -32,23 +32,42 @@ function styleFor(block: Block): Style {
   }
 }
 
-// Greedy word-wrap: pack as many words as fit within `maxWidth` per line.
-function wrapText(text: string, font: PDFFont, size: number, maxWidth: number): string[] {
-  const words = text.split(/\s+/).filter(Boolean);
-  const lines: string[] = [];
-  let current = "";
-
-  for (const word of words) {
-    const candidate = current ? `${current} ${word}` : word;
-    if (font.widthOfTextAtSize(candidate, size) <= maxWidth || current === "") {
-      current = candidate;
-    } else {
-      lines.push(current);
-      current = word;
+// Greedy word-wrap over mixed bold/regular spans: flattens to words (each
+// tagged with its font weight) and packs them onto lines within maxWidth.
+function wrapSpans(
+  spans: Span[],
+  regular: PDFFont,
+  bold: PDFFont,
+  size: number,
+  maxWidth: number,
+): Span[][] {
+  const words: Span[] = [];
+  for (const span of spans) {
+    for (const word of span.text.split(/\s+/).filter(Boolean)) {
+      words.push({ text: word, bold: span.bold });
     }
   }
-  if (current) lines.push(current);
-  return lines.length > 0 ? lines : [""];
+
+  const spaceWidth = regular.widthOfTextAtSize(" ", size);
+  const lines: Span[][] = [];
+  let current: Span[] = [];
+  let currentWidth = 0;
+
+  for (const word of words) {
+    const font = word.bold ? bold : regular;
+    const wordWidth = font.widthOfTextAtSize(word.text, size);
+    const extra = current.length > 0 ? spaceWidth : 0;
+    if (current.length === 0 || currentWidth + extra + wordWidth <= maxWidth) {
+      current.push(word);
+      currentWidth += extra + wordWidth;
+    } else {
+      lines.push(current);
+      current = [word];
+      currentWidth = wordWidth;
+    }
+  }
+  if (current.length > 0) lines.push(current);
+  return lines.length > 0 ? lines : [[]];
 }
 
 export async function exportPdf(markdown: string): Promise<Uint8Array<ArrayBuffer>> {
@@ -67,26 +86,31 @@ export async function exportPdf(markdown: string): Promise<Uint8Array<ArrayBuffe
 
   for (const block of blocks) {
     const style = styleFor(block);
-    const font = style.bold ? bold : regular;
     const lineHeight = style.size * 1.35;
     const glyph = style.bulletGlyph ?? "";
-    const glyphWidth = glyph ? font.widthOfTextAtSize(glyph, style.size) : 0;
+    const glyphWidth = glyph ? regular.widthOfTextAtSize(glyph, style.size) : 0;
     const textWidth = CONTENT_WIDTH - style.indent - glyphWidth;
-    const lines = wrapText(block.text, font, style.size, textWidth);
 
-    lines.forEach((line, i) => {
+    // Headings render fully bold regardless of inline ** markers.
+    const spans = style.bold ? block.spans.map((s) => ({ ...s, bold: true })) : block.spans;
+    const lines = wrapSpans(spans, regular, bold, style.size, textWidth);
+    const spaceWidth = regular.widthOfTextAtSize(" ", style.size);
+
+    lines.forEach((lineWords, i) => {
       if (y - lineHeight < MARGIN) newPage();
       y -= lineHeight;
-      const x = MARGIN + style.indent;
+      let x = MARGIN + style.indent;
+
       if (i === 0 && glyph) {
-        page.drawText(glyph, { x, y, size: style.size, font, color: rgb(0, 0, 0) });
+        page.drawText(glyph, { x, y, size: style.size, font: regular, color: rgb(0, 0, 0) });
+        x += glyphWidth;
       }
-      page.drawText(line, {
-        x: x + glyphWidth,
-        y,
-        size: style.size,
-        font,
-        color: rgb(0, 0, 0),
+
+      lineWords.forEach((word, wi) => {
+        const font = word.bold ? bold : regular;
+        page.drawText(word.text, { x, y, size: style.size, font, color: rgb(0, 0, 0) });
+        x += font.widthOfTextAtSize(word.text, style.size);
+        if (wi < lineWords.length - 1) x += spaceWidth;
       });
     });
 
