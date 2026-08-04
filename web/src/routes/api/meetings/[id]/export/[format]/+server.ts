@@ -1,5 +1,4 @@
 import { error } from "@sveltejs/kit";
-import { NotesRepository } from "$lib/server/db";
 import { exportMarkdown } from "$lib/server/export/markdown";
 import { exportDocx } from "$lib/server/export/docx";
 import { exportPdf } from "$lib/server/export/pdf";
@@ -8,8 +7,8 @@ import type { RequestHandler } from "./$types";
 // GET /api/meetings/:id/export/:format  (format = md | docx | pdf)
 // Builds the requested file from the stored notes markdown and returns it as a
 // download with the correct Content-Type / Content-Disposition.
-export const GET: RequestHandler = async ({ params, platform }) => {
-  const repo = new NotesRepository(platform!.env.DB);
+export const GET: RequestHandler = async ({ params, locals }) => {
+  const repo = locals.db;
 
   const meeting = await repo.getMeeting(params.id);
   if (!meeting) throw error(404, "Meeting not found");

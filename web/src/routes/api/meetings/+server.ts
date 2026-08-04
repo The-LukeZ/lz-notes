@@ -1,5 +1,4 @@
 import { error, json } from "@sveltejs/kit";
-import { NotesRepository } from "$lib/server/db";
 import type { MeetingType } from "$lib/server/types";
 import type { RequestHandler } from "./$types";
 
@@ -7,7 +6,7 @@ import type { RequestHandler } from "./$types";
 // multipart/form-data: file (audio), title, meetingType ('meeting' | 'learning')
 // Creates the D1 row (status: uploaded) and streams the file into R2 at
 // key `audio/{id}/{filename}`.
-export const POST: RequestHandler = async ({ request, platform }) => {
+export const POST: RequestHandler = async ({ request, platform, locals }) => {
   const env = platform!.env;
   const form = await request.formData();
 
@@ -29,8 +28,7 @@ export const POST: RequestHandler = async ({ request, platform }) => {
     httpMetadata: { contentType: file.type || "application/octet-stream" },
   });
 
-  const repo = new NotesRepository(env.DB);
-  await repo.createMeeting({
+  await locals.db.createMeeting({
     id,
     title: title.trim(),
     meetingType: meetingType as MeetingType,

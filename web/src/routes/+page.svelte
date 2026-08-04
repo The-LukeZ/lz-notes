@@ -7,6 +7,8 @@
   let title = $state("");
   let meetingType = $state<"meeting" | "learning">("meeting");
   let file = $state<FileList | null>(null);
+  let fileInput = $state<HTMLInputElement | null>(null);
+  let fileName = $derived(file?.[0]?.name ?? "No file chosen");
   let uploading = $state(false);
   let errorMsg = $state<string | null>(null);
 
@@ -87,13 +89,24 @@
       <div>
         <label class="block text-sm font-medium" for="file">Audio file</label>
         <input
+          bind:this={fileInput}
           id="file"
           type="file"
           accept="audio/*"
-          class="mt-1 w-full text-sm"
+          class="sr-only"
           bind:files={file}
           required
         />
+        <div class="mt-1 flex items-center gap-3">
+          <button
+            type="button"
+            class="rounded-md border border-gray-300 px-3 py-2 text-sm hover:bg-gray-50"
+            onclick={() => fileInput?.click()}
+          >
+            Choose file
+          </button>
+          <span class="text-sm text-gray-500">{fileName}</span>
+        </div>
       </div>
 
       {#if errorMsg}

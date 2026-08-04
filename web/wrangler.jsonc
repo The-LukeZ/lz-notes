@@ -33,7 +33,7 @@
   "r2_buckets": [
     {
       "bucket_name": "lz-notes-audio",
-      "binding": "lz_notes_audio",
+      "binding": "AUDIO_BUCKET",
       "remote": true,
       "jurisdiction": "eu",
     },
@@ -43,7 +43,7 @@
     "producers": [
       {
         "queue": "lz-notes-transcription-jobs",
-        "binding": "lz_notes_transcription_jobs",
+        "binding": "TRANSCRIBE_QUEUE",
         "remote": true
       },
     ],

@@ -1,9 +1,8 @@
 import { error } from "@sveltejs/kit";
-import { NotesRepository } from "$lib/server/db";
 import type { PageServerLoad } from "./$types";
 
-export const load: PageServerLoad = async ({ params, platform }) => {
-  const repo = new NotesRepository(platform!.env.DB);
+export const load: PageServerLoad = async ({ params, locals }) => {
+  const repo = locals.db;
 
   const meeting = await repo.getMeeting(params.id);
   if (!meeting) throw error(404, "Meeting not found");

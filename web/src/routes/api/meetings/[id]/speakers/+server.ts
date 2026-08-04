@@ -1,11 +1,10 @@
 import { error } from "@sveltejs/kit";
-import { NotesRepository } from "$lib/server/db";
 import type { RequestHandler } from "./$types";
 
 // POST /api/meetings/:id/speakers
 // Body: { mapping: { "SPEAKER_00": "Maria", ... } } -> 204
-export const POST: RequestHandler = async ({ params, request, platform }) => {
-  const repo = new NotesRepository(platform!.env.DB);
+export const POST: RequestHandler = async ({ params, request, locals }) => {
+  const repo = locals.db;
 
   const meeting = await repo.getMeeting(params.id);
   if (!meeting) throw error(404, "Meeting not found");

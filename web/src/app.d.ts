@@ -10,7 +10,9 @@ declare global {
     }
 
     // interface Error {}
-    // interface Locals {}
+    interface Locals {
+      db: NotesRepository;
+    }
     // interface PageData {}
     // interface PageState {}
   }

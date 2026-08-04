@@ -1,7 +1,5 @@
-import { NotesRepository } from "$lib/server/db";
 import type { PageServerLoad } from "./$types";
 
-export const load: PageServerLoad = async ({ platform }) => {
-  const repo = new NotesRepository(platform!.env.DB);
-  return { meetings: await repo.listMeetings() };
+export const load: PageServerLoad = async ({ locals }) => {
+  return { meetings: await locals.db.listMeetings() };
 };

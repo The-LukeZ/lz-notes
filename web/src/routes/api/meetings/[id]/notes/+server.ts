@@ -1,6 +1,5 @@
 import { env } from "$env/dynamic/private";
 import { error, json } from "@sveltejs/kit";
-import { NotesRepository } from "$lib/server/db";
 import { generateNotes } from "$lib/server/mistral";
 import { buildTranscriptText, systemPromptFor } from "$lib/server/templates";
 import type { RequestHandler } from "./$types";
@@ -8,8 +7,8 @@ import type { RequestHandler } from "./$types";
 // POST /api/meetings/:id/notes
 // Builds the transcript text from stored segments, picks the prompt by
 // meeting_type, calls Mistral chat completions, stores + returns the markdown.
-export const POST: RequestHandler = async ({ params, platform }) => {
-  const repo = new NotesRepository(platform!.env.DB);
+export const POST: RequestHandler = async ({ params, locals }) => {
+  const repo = locals.db;
 
   const meeting = await repo.getMeeting(params.id);
   if (!meeting) throw error(404, "Meeting not found");
