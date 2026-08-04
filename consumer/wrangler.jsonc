@@ -2,8 +2,9 @@
   "$schema": "./node_modules/wrangler/config-schema.json",
   "name": "lz-notes-consumer",
   "main": "src/index.ts",
+  "account_id": "92d72ac72fb811275ce6e8d5263a9816",
   "compatibility_date": "2026-08-04",
-  "compatibility_flags": [ "nodejs_compat" ],
+  "compatibility_flags": ["nodejs_compat"],
   "observability": {
     "enabled": true,
   },
@@ -11,7 +12,7 @@
   // it here validates its presence on deploy and drives type generation; the
   // value is never stored in config. For local dev put it in consumer/.env.
   "secrets": {
-    "required": [ "MISTRAL_API_KEY" ],
+    "required": ["MISTRAL_API_KEY"],
   },
   // D1 database — shared with the web worker. This database_id MUST match the
   // one in web/wrangler.jsonc exactly (it's one shared database).
