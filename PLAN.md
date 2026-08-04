@@ -186,6 +186,7 @@ Drizzle is coming later but isn't wired in yet. Rather than scatter
 `web/src/lib/server/db.ts` and `consumer/src/db.ts`.
 
 Rules to keep this useful:
+
 - No file outside these two ever calls `.prepare()` / `.batch()` on a
   `D1Database` directly. Route handlers and the queue consumer only ever
   call repository methods (`repo.getMeeting(id)`, `repo.insertSegments(...)`,
@@ -213,17 +214,17 @@ class NotesRepository {
   constructor(private db: D1Database) {}
 
   // web only:
-  createMeeting(params: { id, title, meetingType, audioKey }): Promise<void>
-  listMeetings(): Promise<Meeting[]>
-  getSegments(meetingId): Promise<Segment[]>
-  updateSpeakerNames(meetingId, mapping: Record<string,string>): Promise<void>
-  saveNotes(meetingId, markdown): Promise<void>
-  getNotes(meetingId): Promise<string | null>
+  createMeeting(params: { id; title; meetingType; audioKey }): Promise<void>;
+  listMeetings(): Promise<Meeting[]>;
+  getSegments(meetingId): Promise<Segment[]>;
+  updateSpeakerNames(meetingId, mapping: Record<string, string>): Promise<void>;
+  saveNotes(meetingId, markdown): Promise<void>;
+  getNotes(meetingId): Promise<string | null>;
 
   // both web and consumer:
-  getMeeting(id): Promise<Meeting | null>
-  updateStatus(id, status, error?): Promise<void>
-  insertSegments(meetingId, segments: NewSegment[]): Promise<void>
+  getMeeting(id): Promise<Meeting | null>;
+  updateStatus(id, status, error?): Promise<void>;
+  insertSegments(meetingId, segments: NewSegment[]): Promise<void>;
 }
 ```
 
@@ -297,15 +298,15 @@ ack/retry logic.
 
 ## 6. API contract (web/)
 
-| Route | Method | Body / params | Response |
-|---|---|---|---|
-| `/api/meetings` | POST | `multipart/form-data`: `file` (audio), `title`, `meetingType` (`meeting`\|`learning`) | `{ id }` — creates D1 row via `repo.createMeeting()` (`status: uploaded`), streams file into R2 at key `audio/{id}/{filename}` |
-| `/api/meetings/:id/transcribe` | POST | — | enqueues `{ meetingId }` to `TRANSCRIBE_QUEUE`, sets `status: queued` via `repo.updateStatus()`, `202` |
-| `/api/meetings/:id` | GET | — | `{ meeting, segments, notes }` |
-| `/api/meetings/:id/status` | GET | — | `{ status, error }` — for polling |
-| `/api/meetings/:id/speakers` | POST | `{ mapping: { "SPEAKER_00": "Maria", ... } }` | `204`, calls `repo.updateSpeakerNames()` |
-| `/api/meetings/:id/notes` | POST | — | builds transcript text from segments via `buildTranscriptText()` (prefers `speaker_name`, falls back to `speaker_label`), picks prompt by `meeting_type` (§7), calls `generateNotes()`, `repo.saveNotes()`, returns `{ markdown }` |
-| `/api/meetings/:id/export/:format` | GET | `:format` = `md`\|`docx`\|`pdf` | file download with correct `Content-Type`/`Content-Disposition`, built from `repo.getNotes()` via the matching `export/*.ts` module |
+| Route                              | Method | Body / params                                                                         | Response                                                                                                                                                                                                                           |
+| ---------------------------------- | ------ | ------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `/api/meetings`                    | POST   | `multipart/form-data`: `file` (audio), `title`, `meetingType` (`meeting`\|`learning`) | `{ id }` — creates D1 row via `repo.createMeeting()` (`status: uploaded`), streams file into R2 at key `audio/{id}/{filename}`                                                                                                     |
+| `/api/meetings/:id/transcribe`     | POST   | —                                                                                     | enqueues `{ meetingId }` to `TRANSCRIBE_QUEUE`, sets `status: queued` via `repo.updateStatus()`, `202`                                                                                                                             |
+| `/api/meetings/:id`                | GET    | —                                                                                     | `{ meeting, segments, notes }`                                                                                                                                                                                                     |
+| `/api/meetings/:id/status`         | GET    | —                                                                                     | `{ status, error }` — for polling                                                                                                                                                                                                  |
+| `/api/meetings/:id/speakers`       | POST   | `{ mapping: { "SPEAKER_00": "Maria", ... } }`                                         | `204`, calls `repo.updateSpeakerNames()`                                                                                                                                                                                           |
+| `/api/meetings/:id/notes`          | POST   | —                                                                                     | builds transcript text from segments via `buildTranscriptText()` (prefers `speaker_name`, falls back to `speaker_label`), picks prompt by `meeting_type` (§7), calls `generateNotes()`, `repo.saveNotes()`, returns `{ markdown }` |
+| `/api/meetings/:id/export/:format` | GET    | `:format` = `md`\|`docx`\|`pdf`                                                       | file download with correct `Content-Type`/`Content-Disposition`, built from `repo.getNotes()` via the matching `export/*.ts` module                                                                                                |
 
 Frontend flow: upload form → POST `/api/meetings` → POST
 `.../transcribe` → poll `.../status` until `transcribed` → fetch `GET

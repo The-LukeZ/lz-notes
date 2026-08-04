@@ -1,4 +1,4 @@
-import type { MeetingType, Segment } from './types';
+import type { MeetingType, Segment } from "./types";
 
 export const MEETING_SYSTEM_PROMPT = `You are an assistant that converts a raw, speaker-labeled meeting transcript into clean, structured notes in Markdown.
 
@@ -33,12 +33,12 @@ Anything the teacher mentioned as homework, next steps, or further resources.
 Do not invent information that is not in the transcript. If a section would be empty, omit it entirely rather than writing "None".`;
 
 export function systemPromptFor(meetingType: MeetingType): string {
-	return meetingType === 'learning' ? LEARNING_SYSTEM_PROMPT : MEETING_SYSTEM_PROMPT;
+  return meetingType === "learning" ? LEARNING_SYSTEM_PROMPT : MEETING_SYSTEM_PROMPT;
 }
 
 // Renders segments into the speaker-labeled transcript text handed to the LLM.
 // Prefers the human-assigned speaker_name, falling back to the raw diarization
 // label (e.g. "SPEAKER_00").
 export function buildTranscriptText(segments: Segment[]): string {
-	return segments.map((s) => `${s.speaker_name ?? s.speaker_label}: ${s.text}`).join('\n');
+  return segments.map((s) => `${s.speaker_name ?? s.speaker_label}: ${s.text}`).join("\n");
 }

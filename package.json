@@ -10,12 +10,12 @@
     "check": "pnpm -r check",
     "deploy": "pnpm --filter lz-notes-web deploy && pnpm --filter lz-notes-consumer deploy",
     "db:apply": "wrangler d1 execute lz-notes-db --file=./db/schema.sql --remote",
-    "db:apply:local": "wrangler d1 execute lz-notes-db --file=./db/schema.sql --local"
+    "format": "prettier --write ."
   },
   "devDependencies": {
-    "wrangler": "^4.97.0"
-  },
-  "pnpm": {
-    "onlyBuiltDependencies": ["esbuild", "workerd"]
+    "prettier": "^3.9.6",
+    "prettier-plugin-svelte": "^4.1.1",
+    "prettier-plugin-tailwindcss": "^0.8.1",
+    "wrangler": "^4.118.0"
   }
 }

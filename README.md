@@ -62,7 +62,7 @@ cd web && wrangler secret put MISTRAL_API_KEY && cd ..
 cd consumer && wrangler secret put MISTRAL_API_KEY && cd ..
 ```
 
-For local development, copy `.dev.vars.example` to `.dev.vars` in each package
+For local development, copy `.env.example` to `.env` in each package
 and fill in the key.
 
 ### 3. Run / typecheck / deploy

@@ -1,3 +1,7 @@
 packages:
   - web
   - consumer
+
+allowBuilds:
+  esbuild: true
+  workerd: true

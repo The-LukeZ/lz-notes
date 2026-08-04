@@ -4,7 +4,7 @@
 // a queued transcription job (that's app data, not a binding).
 
 export interface TranscribeJob {
-	meetingId: string;
+  meetingId: string;
 }
 
 export type TranscribeBatch = MessageBatch<TranscribeJob>;
