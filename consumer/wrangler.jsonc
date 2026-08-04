@@ -28,7 +28,7 @@
   "r2_buckets": [
     {
       "bucket_name": "lz-notes-audio",
-      "binding": "lz_notes_audio",
+      "binding": "AUDIO_BUCKET",
       "remote": true,
       "jurisdiction": "eu",
     },
