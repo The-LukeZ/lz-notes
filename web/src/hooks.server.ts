@@ -10,3 +10,11 @@ export const handle = async ({ event, resolve }) => {
   }
   return resolve(event);
 };
+
+export const handleError = ({ error, event }) => {
+  /** @ts-ignore */
+  console.log("handleError", error.stack);
+  return {
+    message: "An unexpected error occurred.",
+  };
+};

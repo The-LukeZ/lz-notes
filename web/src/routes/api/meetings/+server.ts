@@ -24,7 +24,7 @@ export const POST: RequestHandler = async ({ request, platform, locals }) => {
   const filename = file.name || "recording";
   const audioKey = `audio/${id}/${filename}`;
 
-  await env.AUDIO_BUCKET.put(audioKey, file.stream(), {
+  await env.AUDIO_BUCKET.put(audioKey, await file.arrayBuffer(), {
     httpMetadata: { contentType: file.type || "application/octet-stream" },
   });
 

@@ -27,20 +27,17 @@ export class NotesRepository {
   }
 
   async listMeetings(): Promise<Meeting[]> {
-    // console.log(
-    //   (await this.db.prepare(`SELECT * FROM meetings ORDER BY created_at DESC`).all<Meeting>()).meta
-    // );
-    const { results } = await this.db
-      .prepare(`SELECT * FROM meetings ORDER BY created_at DESC`)
-      .all<Meeting>();
-    return results ?? [];
+    const result = await this.db.prepare(`SELECT * FROM meetings ORDER BY created_at DESC`).run<Meeting>();
+
+    console.log("listMeetings", { success: result.success, results: result.results });
+    return result.results ?? [];
   }
 
   async getSegments(meetingId: string): Promise<Segment[]> {
     const { results } = await this.db
       .prepare(`SELECT * FROM transcript_segments WHERE meeting_id = ? ORDER BY seq ASC`)
       .bind(meetingId)
-      .all<Segment>();
+      .run<Segment>();
     return results ?? [];
   }
 

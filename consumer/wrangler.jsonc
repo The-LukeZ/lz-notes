@@ -21,7 +21,6 @@
       "binding": "DB",
       "database_name": "lz-notes-db",
       "database_id": "0ff32317-5188-4519-92d7-63de23c38f13",
-      "remote": true,
     },
   ],
   // R2 bucket for uploaded audio — shared with the web worker.
@@ -29,7 +28,6 @@
     {
       "bucket_name": "lz-notes-audio",
       "binding": "AUDIO_BUCKET",
-      "remote": true,
       "jurisdiction": "eu",
     },
   ],
