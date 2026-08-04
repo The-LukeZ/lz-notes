@@ -27,6 +27,9 @@ export class NotesRepository {
   }
 
   async listMeetings(): Promise<Meeting[]> {
+    // console.log(
+    //   (await this.db.prepare(`SELECT * FROM meetings ORDER BY created_at DESC`).all<Meeting>()).meta
+    // );
     const { results } = await this.db
       .prepare(`SELECT * FROM meetings ORDER BY created_at DESC`)
       .all<Meeting>();
