@@ -48,8 +48,7 @@ Paste the `database_id` returned by `d1 create` into **both**
 Apply the schema:
 
 ```sh
-pnpm db:apply          # remote (production D1)
-pnpm db:apply:local    # local dev D1
+pnpm db:apply
 ```
 
 ### 2. Secrets

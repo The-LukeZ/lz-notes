@@ -33,7 +33,6 @@ pnpm build            # build web then consumer
 pnpm deploy            # deploy web + consumer
 pnpm format             # prettier --write .
 pnpm db:apply             # apply db/schema.sql to remote D1
-pnpm db:apply:local        # apply db/schema.sql to local dev D1
 ```
 
 Per-package (run inside `web/` or `consumer/`):
