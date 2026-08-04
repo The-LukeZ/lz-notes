@@ -33,7 +33,6 @@
     {
       "bucket_name": "lz-notes-audio",
       "binding": "AUDIO_BUCKET",
-      // "remote": true,
       "jurisdiction": "eu",
     },
   ],
@@ -43,7 +42,6 @@
       {
         "queue": "lz-notes-transcription-jobs",
         "binding": "TRANSCRIBE_QUEUE",
-        // "remote": true
       },
     ],
   },

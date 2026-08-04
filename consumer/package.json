@@ -7,7 +7,8 @@
     "dev": "wrangler dev",
     "deploy": "wrangler deploy",
     "check": "wrangler types && tsc --noEmit",
-    "gen": "wrangler types"
+    "gen": "wrangler types",
+    "db:apply:local": "wrangler d1 execute lz-notes-db --file=../db/schema.sql"
   },
   "devDependencies": {
     "@types/node": "^26.1.2",
