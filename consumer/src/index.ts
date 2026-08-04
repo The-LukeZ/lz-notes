@@ -43,6 +43,16 @@ export default {
         await repo.updateStatus(meeting.id, "transcribed");
         console.log(`[consumer] job done meeting=${meeting.id}`);
 
+        // Compliance: recording is no longer needed once the transcript exists.
+        // Deletion failure shouldn't fail the job (transcript is already saved) or
+        // trigger msg.retry(), which would re-run the Mistral call needlessly.
+        try {
+          await env.AUDIO_BUCKET.delete(meeting.audio_key);
+          console.log(`[consumer] recording deleted meeting=${meeting.id} key=${meeting.audio_key}`);
+        } catch (err) {
+          console.error(`[consumer] failed to delete recording meeting=${meeting.id}:`, err);
+        }
+
         msg.ack();
       } catch (err) {
         console.error(`[consumer] job failed meeting=${meeting.id}:`, err);
