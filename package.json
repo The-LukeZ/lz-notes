@@ -11,6 +11,7 @@
     "deploy": "pnpm --filter lz-notes-web deploy && pnpm --filter lz-notes-consumer deploy",
     "db:apply": "wrangler d1 execute lz-notes-db --file=./db/schema.sql --remote",
     "format": "prettier --write .",
+    "format:check": "prettier --check .",
     "prepare": "husky"
   },
   "devDependencies": {
