@@ -14,31 +14,23 @@ export default defineConfig({
       },
       adapter: adapter({
         config: "./wrangler.jsonc",
-        platformProxy: {
-          // Shared with `consumer/` (see its `pnpm dev` script) so both
-          // workers see the same local D1/R2 data in dev — otherwise each
-          // `wrangler`/proxy instance defaults to its own package-local
-          // `.wrangler/state` and meetings written by one are invisible to
-          // the other.
-          persist: { path: "../.wrangler/state" },
-        },
       }),
     }),
-    // SvelteKitPWA({
-    //   registerType: "autoUpdate",
-    //   manifest: {
-    //     name: "lz-notes",
-    //     short_name: "lz-notes",
-    //     description: "Turn recorded meetings into structured notes.",
-    //     theme_color: "#000000",
-    //     background_color: "#ffffff",
-    //     display: "standalone",
-    //     start_url: "/",
-    //     icons: [
-    //       { src: "/icon-192.png", sizes: "192x192", type: "image/png" },
-    //       { src: "/icon-512.png", sizes: "512x512", type: "image/png" },
-    //     ],
-    //   },
-    // }),
+    SvelteKitPWA({
+      registerType: "autoUpdate",
+      manifest: {
+        name: "lz-notes",
+        short_name: "lz-notes",
+        description: "Turn recorded meetings into structured notes.",
+        theme_color: "#000000",
+        background_color: "#ffffff",
+        display: "standalone",
+        start_url: "/",
+        icons: [
+          { src: "/icon-192.png", sizes: "192x192", type: "image/png" },
+          { src: "/icon-512.png", sizes: "512x512", type: "image/png" },
+        ],
+      },
+    }),
   ],
 });

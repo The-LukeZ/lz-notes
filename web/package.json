@@ -11,7 +11,7 @@
     "prepare": "svelte-kit sync || echo ''",
     "check": "wrangler types --check && svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
     "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
-    "db:apply:local": "wrangler d1 execute lz-notes-db --local --persist-to ../.wrangler/state --file=../db/schema.sql",
+    "db:apply:local": "wrangler d1 execute lz-notes-db --local --file=../db/schema.sql",
     "gen": "wrangler types"
   },
   "dependencies": {

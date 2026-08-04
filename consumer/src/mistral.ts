@@ -2,16 +2,11 @@ import type { NewSegment } from "./db";
 
 // Transcription + diarization via Mistral voxtral-mini-latest (PLAN §1).
 //
-// ⚠️ UNVERIFIED RESPONSE SHAPE — READ PLAN §1 / §10 STEP 3 BEFORE TRUSTING THIS.
-// The exact JSON shape of the diarized response (field names for speaker label /
-// text / start / end per segment) was NOT confirmed against a real response
-// during planning. `parseTranscriptionResponse` below is a best-guess parser
-// that assumes an OpenAI-style `{ segments: [{ speaker, text, start, end }] }`
-// shape. It logs the raw response and throws clearly if the shape doesn't match,
-// rather than silently producing garbage. Make one real test call against a
-// short multi-speaker clip (via `wrangler tail` on a test run, or a standalone
-// curl), inspect the actual JSON, and fix the field names here before relying
-// on it.
+// Response shape cross-checked against Mistral's diarization docs: top-level
+// `segments[]` array with `text` / `start` / `end` / `speaker_id` per segment
+// — matches `parseTranscriptionResponse` below. Still not confirmed against a
+// live response, so it still logs the raw response and throws clearly on
+// mismatch rather than silently producing garbage.
 
 const TRANSCRIPTIONS_URL = "https://api.mistral.ai/v1/audio/transcriptions";
 const TRANSCRIBE_MODEL = "voxtral-mini-latest";
@@ -31,7 +26,7 @@ export async function transcribeAudio(
 
   const res = await fetch(TRANSCRIPTIONS_URL, {
     method: "POST",
-    headers: { Authorization: `Bearer ${apiKey}` },
+    headers: { "x-api-key": apiKey },
     body: form,
   });
 
@@ -78,7 +73,7 @@ export function parseTranscriptionResponse(data: unknown): NewSegment[] {
 
     return {
       seq: index,
-      speaker_label: normalizeSpeaker(s.speaker, index),
+      speaker_label: normalizeSpeaker(s.speaker_id, index),
       text,
       start_time: toNumber(s.start),
       end_time: toNumber(s.end),

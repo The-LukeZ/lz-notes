@@ -4,11 +4,11 @@
   "version": "0.0.1",
   "type": "module",
   "scripts": {
-    "dev": "wrangler dev --persist-to ../.wrangler/state",
+    "dev": "wrangler dev --persist-to ../web/.wrangler/state",
     "deploy": "wrangler deploy",
     "check": "wrangler types && tsc --noEmit",
     "gen": "wrangler types",
-    "db:apply:local": "wrangler d1 execute lz-notes-db --local --persist-to ../.wrangler/state --file=../db/schema.sql"
+    "db:apply:local": "wrangler d1 execute lz-notes-db --local --persist-to ../web/.wrangler/state --file=../db/schema.sql"
   },
   "devDependencies": {
     "@types/node": "^26.1.2",

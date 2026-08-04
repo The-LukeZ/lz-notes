@@ -137,3 +137,15 @@ short multi-speaker clip and fix the field names against the actual shape
 - Formatting: Prettier with `prettier-plugin-svelte` and
   `prettier-plugin-tailwindcss` — run `pnpm format` at the repo root, not
   per-package.
+- **Local dev D1/R2 state**: `web`'s dev server (`vite dev` via
+  `adapter-cloudflare`'s `getPlatformProxy`) always persists local D1/R2 data
+  to `web/.wrangler/state` — its `platformProxy.persist.path` option in
+  `vite.config.ts` is **not honored in `vite dev`** (only affects
+  build/preview), so this location can't be changed from that side. `consumer`
+  therefore points at it explicitly: `consumer/package.json`'s `dev` and
+  `db:apply:local` scripts pass `--persist-to ../web/.wrangler/state`. If you
+  see the consumer log a queue delivery but then `meeting not found` and drop
+  the message, the two workers' local DBs have diverged — check that
+  `--persist-to` flag hasn't drifted from `web/.wrangler/state`. This is a
+  local-dev-only quirk; both workers bind the same real D1/R2 in
+  preview/prod.
