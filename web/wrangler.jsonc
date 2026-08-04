@@ -31,16 +31,19 @@
   // R2 bucket for uploaded audio — shared with the consumer worker.
   "r2_buckets": [
     {
-      "binding": "AUDIO_BUCKET",
       "bucket_name": "lz-notes-audio",
+      "binding": "lz_notes_audio",
+      "remote": true,
+      "jurisdiction": "eu",
     },
   ],
   // Queue producer: the web worker enqueues transcription jobs.
   "queues": {
     "producers": [
       {
-        "binding": "TRANSCRIBE_QUEUE",
         "queue": "lz-notes-transcription-jobs",
+        "binding": "lz_notes_transcription_jobs",
+        "remote": true
       },
     ],
   },

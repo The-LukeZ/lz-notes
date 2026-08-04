@@ -3,7 +3,7 @@
   "name": "lz-notes-consumer",
   "main": "src/index.ts",
   "compatibility_date": "2026-08-04",
-  "compatibility_flags": ["nodejs_compat"],
+  "compatibility_flags": [ "nodejs_compat" ],
   "observability": {
     "enabled": true,
   },
@@ -11,7 +11,7 @@
   // it here validates its presence on deploy and drives type generation; the
   // value is never stored in config. For local dev put it in consumer/.env.
   "secrets": {
-    "required": ["MISTRAL_API_KEY"],
+    "required": [ "MISTRAL_API_KEY" ],
   },
   // D1 database — shared with the web worker. This database_id MUST match the
   // one in web/wrangler.jsonc exactly (it's one shared database).
@@ -26,8 +26,10 @@
   // R2 bucket for uploaded audio — shared with the web worker.
   "r2_buckets": [
     {
-      "binding": "AUDIO_BUCKET",
       "bucket_name": "lz-notes-audio",
+      "binding": "lz_notes_audio",
+      "remote": true,
+      "jurisdiction": "eu",
     },
   ],
   // Queue consumer: one transcription job per invocation. max_batch_size: 1 is
