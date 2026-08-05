@@ -4,6 +4,7 @@ CREATE TABLE IF NOT EXISTS meetings (
   meeting_type TEXT NOT NULL CHECK (meeting_type IN ('meeting', 'learning')),
   status TEXT NOT NULL DEFAULT 'uploaded', -- uploaded -> queued -> transcribing -> transcribed -> notes_ready | failed
   audio_key TEXT NOT NULL,
+  glossary TEXT,
   error TEXT,
   created_at TEXT NOT NULL DEFAULT (datetime('now')),
   updated_at TEXT NOT NULL DEFAULT (datetime('now'))

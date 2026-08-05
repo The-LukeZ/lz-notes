@@ -1,8 +1,7 @@
 <script lang="ts">
   import { invalidateAll } from "$app/navigation";
-  import type { PageData } from "./$types";
 
-  let { data }: { data: PageData } = $props();
+  let { data } = $props();
 
   const meeting = $derived(data.meeting);
 

@@ -40,8 +40,9 @@ it back.
     -F timestamp_granularities="segment"
   ```
 
-  Other useful params: `context_bias` (repeat `-F context_bias="word"` per
-  term, up to 100 — good for names/jargon), `language` (skip it and Mistral
+  Other useful params: `context_bias` (single comma-separated string, up to
+  100 words/phrases — good for names/jargon; confirmed against
+  `.claude/refs/transcription-voxtral.md`), `language` (skip it and Mistral
   auto-detects).
 
   **⚠️ Unverified — do this before writing the parser**: the exact JSON shape
@@ -115,8 +116,18 @@ it back.
   paragraphs — see prompt templates in §6) so a minimal hand-written parser
   can drive both exporters without needing a full markdown engine.
 
-- **Installable**: SvelteKit as a PWA (`vite-plugin-pwa`) covers "browser,
-  maybe installable locally" in one deployment — no Electron/Tauri needed.
+- **Installable**: static `web/static/manifest.json` + a `<link rel="manifest">`
+  in `web/src/app.html` — plain, no service worker. `@vite-pwa/sveltekit`
+  was tried first but its generated manifest/registration didn't work in
+  this setup; the static-file approach (confirmed working in the sibling
+  `redditdwnld` repo) is simpler and doesn't need a plugin at all.
+
+- **Glossary / context bias**: optional per-meeting textarea (one term per
+  line) collected in the upload form, stored as `meetings.glossary`
+  (newline-separated, nullable), split and joined into Mistral's
+  `context_bias` form field (comma-separated, up to 100 terms) in
+  `consumer/src/mistral.ts`. See `.claude/refs/transcription-voxtral.md`
+  for the confirmed API shape.
 
 ---
 
@@ -241,6 +252,7 @@ CREATE TABLE IF NOT EXISTS meetings (
   meeting_type TEXT NOT NULL CHECK (meeting_type IN ('meeting', 'learning')),
   status TEXT NOT NULL DEFAULT 'uploaded', -- uploaded -> queued -> transcribing -> transcribed -> notes_ready | failed
   audio_key TEXT NOT NULL,
+  glossary TEXT, -- optional newline-separated context_bias terms for transcription
   error TEXT,
   created_at TEXT NOT NULL DEFAULT (datetime('now')),
   updated_at TEXT NOT NULL DEFAULT (datetime('now'))
@@ -300,7 +312,7 @@ ack/retry logic.
 
 | Route                              | Method | Body / params                                                                         | Response                                                                                                                                                                                                                           |
 | ---------------------------------- | ------ | ------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `/api/meetings`                    | POST   | `multipart/form-data`: `file` (audio), `title`, `meetingType` (`meeting`\|`learning`) | `{ id }` — creates D1 row via `repo.createMeeting()` (`status: uploaded`), streams file into R2 at key `audio/{id}/{filename}`                                                                                                     |
+| `/api/meetings`                    | POST   | `multipart/form-data`: `file` (audio), `title`, `meetingType` (`meeting`\|`learning`), `glossary` (optional, newline-separated terms) | `{ id }` — creates D1 row via `repo.createMeeting()` (`status: uploaded`), streams file into R2 at key `audio/{id}/{filename}`                                                                                                     |
 | `/api/meetings/:id/transcribe`     | POST   | —                                                                                     | enqueues `{ meetingId }` to `TRANSCRIBE_QUEUE`, sets `status: queued` via `repo.updateStatus()`, `202`                                                                                                                             |
 | `/api/meetings/:id`                | GET    | —                                                                                     | `{ meeting, segments, notes }`                                                                                                                                                                                                     |
 | `/api/meetings/:id/status`         | GET    | —                                                                                     | `{ status, error }` — for polling                                                                                                                                                                                                  |
@@ -414,9 +426,8 @@ queue(batch, env):
    testable independently of any UI via curl.
 6. Write the two Svelte pages (`+page.svelte`, `meeting/[id]/+page.svelte`)
    and their `+page.server.ts` loaders.
-7. PWA manifest + icons (`vite-plugin-pwa` config already in
-   `web/vite.config.ts` — still need `web/static/icon-192.png` and
-   `icon-512.png`; any square PNGs work as placeholders).
+7. ~~PWA manifest + icons~~ — done: static `web/static/manifest.json` +
+   `web/static/icon-192.png`/`icon-512.png`, linked from `web/src/app.html`.
 8. `pnpm --filter lz-notes-web deploy` and `pnpm --filter lz-notes-consumer deploy`
    (or the root `pnpm deploy` script, which does both). Smoke test
    end-to-end with a short recording before trusting it with a real
@@ -428,8 +439,6 @@ queue(batch, env):
 
 - Exact transcription response JSON field names — needs the verification
   call in step 3 above.
-- Whether `context_bias` (custom vocabulary) should be exposed in the
-  upload UI — nice-to-have, not required for v1.
 - No auth on any of this — fine for a single-user personal tool on a
   private URL, but worth a one-line note in the README so it doesn't get
   forgotten if this ever gets shared or made public.

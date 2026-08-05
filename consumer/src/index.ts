@@ -37,7 +37,12 @@ export default {
           `[consumer] audio fetched meeting=${meeting.id} bytes=${audio.byteLength}, calling mistral`
         );
 
-        const segments = await transcribeAudio(env.MISTRAL_API_KEY, audio, meeting.audio_key);
+        const segments = await transcribeAudio(
+          env.MISTRAL_API_KEY,
+          audio,
+          meeting.audio_key,
+          meeting.glossary
+        );
         console.log(`[consumer] transcription done meeting=${meeting.id} segments=${segments.length}`);
         await repo.insertSegments(meeting.id, segments);
         await repo.updateStatus(meeting.id, "transcribed");

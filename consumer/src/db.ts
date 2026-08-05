@@ -12,6 +12,7 @@ export interface Meeting {
   meeting_type: "meeting" | "learning";
   status: MeetingStatus;
   audio_key: string;
+  glossary: string | null;
   error: string | null;
   created_at: string;
   updated_at: string;

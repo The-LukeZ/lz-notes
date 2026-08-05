@@ -16,13 +16,14 @@ export class NotesRepository {
     title: string;
     meetingType: MeetingType;
     audioKey: string;
+    glossary?: string | null;
   }): Promise<void> {
     await this.db
       .prepare(
-        `INSERT INTO meetings (id, title, meeting_type, status, audio_key)
-				 VALUES (?, ?, ?, 'uploaded', ?)`
+        `INSERT INTO meetings (id, title, meeting_type, status, audio_key, glossary)
+				 VALUES (?, ?, ?, 'uploaded', ?, ?)`
       )
-      .bind(params.id, params.title, params.meetingType, params.audioKey)
+      .bind(params.id, params.title, params.meetingType, params.audioKey, params.glossary ?? null)
       .run();
   }
 

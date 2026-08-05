@@ -3,7 +3,7 @@ import type { MeetingType } from "$lib/server/types";
 import type { RequestHandler } from "./$types";
 
 // POST /api/meetings
-// multipart/form-data: file (audio), title, meetingType ('meeting' | 'learning')
+// multipart/form-data: file (audio), title, meetingType ('meeting' | 'learning'), glossary (optional)
 // Creates the D1 row (status: uploaded) and streams the file into R2 at
 // key `audio/{id}/{filename}`.
 export const POST: RequestHandler = async ({ request, platform, locals }) => {
@@ -13,11 +13,15 @@ export const POST: RequestHandler = async ({ request, platform, locals }) => {
   const file = form.get("file");
   const title = form.get("title");
   const meetingType = form.get("meetingType");
+  const glossary = form.get("glossary");
 
   if (!(file instanceof File)) throw error(400, "Missing audio file");
   if (typeof title !== "string" || title.trim() === "") throw error(400, "Missing title");
   if (meetingType !== "meeting" && meetingType !== "learning") {
     throw error(400, "meetingType must be 'meeting' or 'learning'");
+  }
+  if (glossary !== null && typeof glossary !== "string") {
+    throw error(400, "glossary must be a string");
   }
 
   const id = crypto.randomUUID();
@@ -33,6 +37,7 @@ export const POST: RequestHandler = async ({ request, platform, locals }) => {
     title: title.trim(),
     meetingType: meetingType as MeetingType,
     audioKey,
+    glossary: glossary && glossary.trim() !== "" ? glossary.trim() : null,
   });
 
   return json({ id }, { status: 201 });

@@ -1,12 +1,12 @@
 <script lang="ts">
   import { goto } from "$app/navigation";
-  import type { PageData } from "./$types";
 
-  let { data }: { data: PageData } = $props();
+  let { data } = $props();
 
   let title = $state("");
   let meetingType = $state<"meeting" | "learning">("meeting");
   let file = $state<FileList | null>(null);
+  let glossary = $state("");
   let fileInput = $state<HTMLInputElement | null>(null);
   let fileName = $derived(file?.[0]?.name ?? "No file chosen");
   let uploading = $state(false);
@@ -37,6 +37,7 @@
       form.set("file", selected);
       form.set("title", title);
       form.set("meetingType", meetingType);
+      if (glossary.trim() !== "") form.set("glossary", glossary);
 
       const res = await fetch("/api/meetings", { method: "POST", body: form });
       if (!res.ok) throw new Error((await res.text()) || `Upload failed (${res.status})`);
@@ -57,7 +58,10 @@
 <svelte:head><title>lz-notes</title></svelte:head>
 
 <main class="mx-auto max-w-3xl px-4 py-10">
-  <h1 class="text-3xl font-bold tracking-tight">lz-notes</h1>
+  <div class="flex items-center gap-2">
+    <img src="/icon-192.png" alt="lz-notes logo" class="size-8" />
+    <h1 class="text-3xl font-bold tracking-tight">lz-notes</h1>
+  </div>
   <p class="mt-1 text-gray-500">Turn recorded meetings into structured notes.</p>
 
   <section class="mt-8 rounded-xl border border-gray-200 p-6 shadow-sm">
@@ -108,6 +112,24 @@
           <span class="text-sm text-gray-500">{fileName}</span>
         </div>
       </div>
+
+      <details class="rounded-md border border-gray-200 px-3 py-2">
+        <summary class="cursor-pointer text-sm font-medium">Glossary (optional)</summary>
+        <div class="mt-2">
+          <label class="block text-sm text-gray-500" for="glossary">
+            Provide up to 100 words or phrases to guide the model toward correct spellings of names, technical
+            terms, or domain-specific vocabulary. Particularly useful for proper nouns or industry terminology
+            that standard models often miss. Context biasing is optimized for English; support for other
+            languages is experimental.
+          </label>
+          <textarea
+            id="glossary"
+            class="mt-2 field-sizing-content w-full resize-none rounded-md border border-gray-300 px-3 py-2"
+            bind:value={glossary}
+            placeholder={"One word or phrase per line, e.g.\nKubernetes\nAcme Corp\nJane Doe"}
+            rows="3"></textarea>
+        </div>
+      </details>
 
       {#if errorMsg}
         <p class="text-sm text-red-600">{errorMsg}</p>

@@ -14,7 +14,8 @@ const TRANSCRIBE_MODEL = "voxtral-mini-latest";
 export async function transcribeAudio(
   apiKey: string,
   audio: ArrayBuffer,
-  audioKey: string
+  audioKey: string,
+  glossary?: string | null
 ): Promise<NewSegment[]> {
   const filename = audioKey.split("/").pop() || "recording";
 
@@ -23,6 +24,15 @@ export async function transcribeAudio(
   form.set("file", new File([audio], filename));
   form.set("diarize", "true");
   form.set("timestamp_granularities", "segment");
+
+  // context_bias: comma-separated words/phrases, up to 100 (see .claude/refs/transcription-voxtral.md).
+  if (glossary) {
+    const terms = glossary
+      .split("\n")
+      .map((t) => t.trim())
+      .filter(Boolean);
+    if (terms.length > 0) form.set("context_bias", terms.join(","));
+  }
 
   const res = await fetch(TRANSCRIPTIONS_URL, {
     method: "POST",

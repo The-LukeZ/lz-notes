@@ -145,6 +145,21 @@ of producing garbage.
 for note generation), which does use Bearer. Don't copy the header pattern
 across the two.
 
+**Glossary / context bias**: the upload form has an optional `<details>`
+textarea (one term per line), stored as `meetings.glossary` (newline-separated,
+nullable). `consumer/src/mistral.ts` splits it and joins with `,` into the
+`context_bias` form field (Mistral's format — a single comma-separated
+string, up to 100 terms; not repeated form fields). See
+`.claude/refs/transcription-voxtral.md` for the confirmed API shape.
+
+### PWA / installability
+
+Static `web/static/manifest.json` + `<link rel="manifest">` in
+`web/src/app.html` — no service worker, no plugin. `@vite-pwa/sveltekit` was
+tried first and didn't work in this setup; the static-manifest approach
+(same pattern as the sibling `redditdwnld` repo) does. Don't reintroduce a
+PWA vite plugin without confirming it actually works here first.
+
 ## Conventions
 
 - Env/secrets: `MISTRAL_API_KEY` is a required secret in both

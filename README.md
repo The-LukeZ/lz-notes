@@ -108,3 +108,9 @@ fix the field names in that function before relying on it. See `PLAN.md` §1/§1
   not WebSockets/Durable Objects.
 - **Exports:** Markdown is the stored source of truth (raw LLM output); DOCX
   (`docx`) and PDF (`pdf-lib`) are generated from it on demand.
+- **Glossary / context bias:** optional per-meeting field in the upload form
+  (one term per line) to help transcription get names/jargon right — passed
+  to Mistral as `context_bias`.
+- **Installable:** static `web/static/manifest.json` + a `<link rel="manifest">`
+  in `app.html` (no service worker, no PWA plugin — `@vite-pwa/sveltekit`
+  didn't work in this setup).
