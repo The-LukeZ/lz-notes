@@ -1,0 +1,48 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "lz-notes-web",
+  "compatibility_date": "2026-07-28",
+  "compatibility_flags": ["nodejs_als", "nodejs_compat"],
+  "main": ".svelte-kit/cloudflare/_worker.js",
+  "account_id": "92d72ac72fb811275ce6e8d5263a9816",
+  "assets": {
+    "binding": "ASSETS",
+    "directory": ".svelte-kit/cloudflare",
+  },
+  "workers_dev": true,
+  "preview_urls": true,
+  "observability": {
+    "enabled": true,
+  },
+  // Required secret. Set with `wrangler secret put MISTRAL_API_KEY`. Declaring
+  // it here validates its presence on deploy and drives type generation; the
+  // value is never stored in config. For local dev put it in web/.env.
+  "secrets": {
+    "required": ["MISTRAL_API_KEY"],
+  },
+  // D1 database — shared with the consumer worker. The database_id below must
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "lz-notes-db",
+      "database_id": "0ff32317-5188-4519-92d7-63de23c38f13",
+    },
+  ],
+  // R2 bucket for uploaded audio — shared with the consumer worker.
+  "r2_buckets": [
+    {
+      "bucket_name": "lz-notes-audio",
+      "binding": "AUDIO_BUCKET",
+      "jurisdiction": "eu",
+    },
+  ],
+  // Queue producer: the web worker enqueues transcription jobs.
+  "queues": {
+    "producers": [
+      {
+        "queue": "lz-notes-transcription-jobs",
+        "binding": "TRANSCRIBE_QUEUE",
+      },
+    ],
+  },
+}

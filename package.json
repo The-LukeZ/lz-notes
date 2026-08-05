@@ -1,0 +1,25 @@
+{
+  "name": "lz-notes",
+  "private": true,
+  "version": "0.0.1",
+  "description": "Turns recorded meetings into structured notes with speaker diarization, exportable as PDF, DOCX, and Markdown.",
+  "type": "module",
+  "scripts": {
+    "dev": "pnpm --filter lz-notes-web dev",
+    "build": "pnpm --filter lz-notes-web build && pnpm --filter lz-notes-consumer build",
+    "check": "pnpm -r check",
+    "deploy": "pnpm --filter lz-notes-web deploy && pnpm --filter lz-notes-consumer deploy",
+    "db:apply": "wrangler d1 execute lz-notes-db --file=./db/schema.sql --remote",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "gen": "pnpm -r gen",
+    "prepare": "husky"
+  },
+  "devDependencies": {
+    "husky": "^9.1.7",
+    "prettier": "^3.9.6",
+    "prettier-plugin-svelte": "^4.1.1",
+    "prettier-plugin-tailwindcss": "^0.8.1",
+    "wrangler": "4.113.0"
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "name": "lz-notes-consumer",
+  "private": true,
+  "version": "0.0.1",
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev --persist-to ../web/.wrangler/state",
+    "deploy": "wrangler deploy --minify",
+    "build": "wrangler deploy --minify --dry-run --outdir=./dist",
+    "check": "wrangler types && tsc --noEmit",
+    "gen": "wrangler types",
+    "db:apply:local": "wrangler d1 execute lz-notes-db --local --persist-to ../web/.wrangler/state --file=../db/schema.sql"
+  },
+  "devDependencies": {
+    "@types/node": "^26.1.2",
+    "typescript": "6.0.3",
+    "wrangler": "4.113.0"
+  }
+}

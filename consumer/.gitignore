@@ -1,0 +1,8 @@
+node_modules
+.wrangler
+
+# Env / secrets for local dev
+.env
+.env.*
+!.env.example
+dist/
