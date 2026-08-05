@@ -310,15 +310,15 @@ ack/retry logic.
 
 ## 6. API contract (web/)
 
-| Route                              | Method | Body / params                                                                         | Response                                                                                                                                                                                                                           |
-| ---------------------------------- | ------ | ------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Route                              | Method | Body / params                                                                                                                         | Response                                                                                                                                                                                                                           |
+| ---------------------------------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `/api/meetings`                    | POST   | `multipart/form-data`: `file` (audio), `title`, `meetingType` (`meeting`\|`learning`), `glossary` (optional, newline-separated terms) | `{ id }` — creates D1 row via `repo.createMeeting()` (`status: uploaded`), streams file into R2 at key `audio/{id}/{filename}`                                                                                                     |
-| `/api/meetings/:id/transcribe`     | POST   | —                                                                                     | enqueues `{ meetingId }` to `TRANSCRIBE_QUEUE`, sets `status: queued` via `repo.updateStatus()`, `202`                                                                                                                             |
-| `/api/meetings/:id`                | GET    | —                                                                                     | `{ meeting, segments, notes }`                                                                                                                                                                                                     |
-| `/api/meetings/:id/status`         | GET    | —                                                                                     | `{ status, error }` — for polling                                                                                                                                                                                                  |
-| `/api/meetings/:id/speakers`       | POST   | `{ mapping: { "SPEAKER_00": "Maria", ... } }`                                         | `204`, calls `repo.updateSpeakerNames()`                                                                                                                                                                                           |
-| `/api/meetings/:id/notes`          | POST   | —                                                                                     | builds transcript text from segments via `buildTranscriptText()` (prefers `speaker_name`, falls back to `speaker_label`), picks prompt by `meeting_type` (§7), calls `generateNotes()`, `repo.saveNotes()`, returns `{ markdown }` |
-| `/api/meetings/:id/export/:format` | GET    | `:format` = `md`\|`docx`\|`pdf`                                                       | file download with correct `Content-Type`/`Content-Disposition`, built from `repo.getNotes()` via the matching `export/*.ts` module                                                                                                |
+| `/api/meetings/:id/transcribe`     | POST   | —                                                                                                                                     | enqueues `{ meetingId }` to `TRANSCRIBE_QUEUE`, sets `status: queued` via `repo.updateStatus()`, `202`                                                                                                                             |
+| `/api/meetings/:id`                | GET    | —                                                                                                                                     | `{ meeting, segments, notes }`                                                                                                                                                                                                     |
+| `/api/meetings/:id/status`         | GET    | —                                                                                                                                     | `{ status, error }` — for polling                                                                                                                                                                                                  |
+| `/api/meetings/:id/speakers`       | POST   | `{ mapping: { "SPEAKER_00": "Maria", ... } }`                                                                                         | `204`, calls `repo.updateSpeakerNames()`                                                                                                                                                                                           |
+| `/api/meetings/:id/notes`          | POST   | —                                                                                                                                     | builds transcript text from segments via `buildTranscriptText()` (prefers `speaker_name`, falls back to `speaker_label`), picks prompt by `meeting_type` (§7), calls `generateNotes()`, `repo.saveNotes()`, returns `{ markdown }` |
+| `/api/meetings/:id/export/:format` | GET    | `:format` = `md`\|`docx`\|`pdf`                                                                                                       | file download with correct `Content-Type`/`Content-Disposition`, built from `repo.getNotes()` via the matching `export/*.ts` module                                                                                                |
 
 Frontend flow: upload form → POST `/api/meetings` → POST
 `.../transcribe` → poll `.../status` until `transcribed` → fetch `GET
@@ -415,30 +415,10 @@ queue(batch, env):
 
 ## 10. Build order (what's left)
 
-1. ~~`db/schema.sql`~~ — done.
-2. Provision Cloudflare resources (§5); fill in the D1 `database_id` in both
-   `wrangler.jsonc`.
-3. **Make one real curl call** to the Mistral transcription endpoint (§1) and
-   fix `parseTranscriptionResponse()` in `consumer/src/mistral.ts` against
-   the real shape.
-4. Write `web/src/lib/server/export/docx.ts` and `pdf.ts` (§8).
-5. Write the `web/src/routes/api/**/+server.ts` endpoints per §6 — these are
-   testable independently of any UI via curl.
-6. Write the two Svelte pages (`+page.svelte`, `meeting/[id]/+page.svelte`)
-   and their `+page.server.ts` loaders.
-7. ~~PWA manifest + icons~~ — done: static `web/static/manifest.json` +
-   `web/static/icon-192.png`/`icon-512.png`, linked from `web/src/app.html`.
-8. `pnpm --filter lz-notes-web deploy` and `pnpm --filter lz-notes-consumer deploy`
-   (or the root `pnpm deploy` script, which does both). Smoke test
-   end-to-end with a short recording before trusting it with a real
-   1-hour meeting.
+Nothing - we are done.
 
 ---
 
 ## 11. Known open items (flag back to the user, don't guess)
 
-- Exact transcription response JSON field names — needs the verification
-  call in step 3 above.
-- No auth on any of this — fine for a single-user personal tool on a
-  private URL, but worth a one-line note in the README so it doesn't get
-  forgotten if this ever gets shared or made public.
+- Auth is purely done via Cloudflare Access on the domain of the deployed app. No auth is implemented in the codebase itself.
