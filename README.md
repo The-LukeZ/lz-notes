@@ -137,4 +137,4 @@ end result is two Access applications, the bypass one and the real one:
   to Mistral as `context_bias`.
 - **Installable:** static `web/static/manifest.json` + a `<link rel="manifest">`
   in `app.html` (no service worker, no PWA plugin — `@vite-pwa/sveltekit`
-  didn't work in this setup).
+  didn't work in this setup - need to check again though).
