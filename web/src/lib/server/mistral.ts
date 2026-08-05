@@ -26,6 +26,7 @@ export async function generateNotes(
         { role: "system", content: systemPrompt },
         { role: "user", content: transcript },
       ],
+      // TODO: add reasoning_effort: "medium",
     }),
   });
 
