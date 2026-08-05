@@ -87,17 +87,41 @@ deploys independently — `web` only if `web/**` (or shared `db/schema.sql`
 paths) changed. Needs `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID`
 repo secrets.
 
-## ⚠️ Before trusting transcription: verify the response shape
+## Cloudflare Access Configuration
 
-The exact JSON shape of Mistral's diarized transcription response was **not**
-confirmed during planning. `consumer/src/mistral.ts` ships a best-guess parser
-(`parseTranscriptionResponse`, assuming `{ segments: [{ speaker, text, start,
-end }] }`) that logs the raw response and throws clearly on a mismatch rather
-than silently producing garbage.
+If the deployed `web` Worker sits behind a Cloudflare Access application
+(recommended, since the app itself has no auth — see Notes below),
+`manifest.json` and the icon files must be reachable **without** login, or
+the browser's install prompt breaks. _If you **don't** care about PWA install, you can skip this section._
 
-Make one real call against a short multi-speaker clip, inspect the actual JSON
-(`wrangler tail lz-notes-consumer` during a test run, or a standalone curl), and
-fix the field names in that function before relying on it. See `PLAN.md` §1/§10.
+<details>
+  <summary>Click to expand</summary>
+
+Why: `<link rel="manifest">` is fetched by the browser in CORS mode without
+credentials. Access intercepts it, 302s to the login page, and since that
+redirect has no CORS headers, the browser reports it as a blocked CORS
+request — not an auth error, so it's easy to misdiagnose.
+
+Fix: Access cannot exclude one path within the same application if you've
+hit the 5-hostname limit on it — add a **separate** Access application
+scoped to just the static asset paths, with a **Bypass** policy
+(Include Everyone):
+
+- Public hostname: `<your-worker-hostname>`, path `/icon-*.png` (wildcard
+  covers all icon variants in one row)
+- Additional hostname+path rows in the same app: `/manifest.json`,
+  `/favicon.ico`, `/apple-touch-icon.png`
+- Policy: **Bypass**, Include Everyone
+
+![Bypass destinations config](./media/bypass_config.png)
+
+Access matches the most specific hostname+path, so this app's rules win for
+those paths while the rest of the site stays behind your main Access app —
+end result is two Access applications, the bypass one and the real one:
+
+![Two Access applications](./media/cf_access_applications.png)
+
+</details>
 
 ## Notes
 

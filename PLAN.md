@@ -45,18 +45,6 @@ it back.
   `.claude/refs/transcription-voxtral.md`), `language` (skip it and Mistral
   auto-detects).
 
-  **⚠️ Unverified — do this before writing the parser**: the exact JSON shape
-  of the diarized response (field names for speaker label / text / start /
-  end per segment) was not confirmed against a real response during
-  planning. `consumer/src/mistral.ts` is already scaffolded with a
-  best-guess parser (`parseTranscriptionResponse`, assumes an OpenAI-style
-  `{ segments: [{ speaker, text, start, end }] }` shape) that logs the raw
-  response and throws clearly if the shape doesn't match, rather than
-  silently producing garbage. Make one real test call against a short
-  multi-speaker clip, inspect the actual JSON (via `wrangler tail` on a test
-  run, or a standalone curl), and fix the field names in that function
-  before trusting it.
-
 - **Note generation**: Mistral `mistral-large-latest` via
   `POST https://api.mistral.ai/v1/chat/completions` (standard chat
   completions, JSON body, `messages: [{role, content}]`):
