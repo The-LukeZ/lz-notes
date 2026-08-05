@@ -7,5 +7,5 @@ allowBuilds:
   sharp: true
   workerd: true
 
-# TODO: Add back after 11.08.26
-# minimumReleaseAge: 10080
+# TODO: Set to 10080 after 11.08.26
+minimumReleaseAge: 0

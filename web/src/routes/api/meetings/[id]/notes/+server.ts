@@ -1,13 +1,13 @@
+// @ts-expect-error: Somehow this isnt found because of Sveltekit shenanigans
 import { env } from "$env/dynamic/private";
 import { error, json } from "@sveltejs/kit";
 import { generateNotes } from "$lib/server/mistral";
 import { buildTranscriptText, systemPromptFor } from "$lib/server/templates";
-import type { RequestHandler } from "./$types";
 
 // POST /api/meetings/:id/notes
 // Builds the transcript text from stored segments, picks the prompt by
 // meeting_type, calls Mistral chat completions, stores + returns the markdown.
-export const POST: RequestHandler = async ({ params, locals }) => {
+export const POST = async ({ params, locals }) => {
   const repo = locals.db;
 
   const meeting = await repo.getMeeting(params.id);
