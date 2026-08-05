@@ -5,7 +5,8 @@ and "learning meetings" where one person teaches others), exportable as PDF,
 DOCX, and Markdown. Speaker diarization is core — notes are generated from a
 transcript that already knows who said what.
 
-The full architecture and the decisions behind it live in [`PLAN.md`](./PLAN.md).
+<!-- Only way to resize is to use img tags -->
+<img src="./media/preview.png" alt="Preview Screenshot" width="600" />
 
 ## Layout
 
