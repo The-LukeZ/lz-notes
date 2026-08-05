@@ -81,6 +81,16 @@ export class NotesRepository {
     return row?.markdown ?? null;
   }
 
+  // Explicit cascade (rather than relying on the schema's ON DELETE CASCADE,
+  // which needs `PRAGMA foreign_keys = ON` — not guaranteed on every D1 connection).
+  async deleteMeeting(id: string): Promise<void> {
+    await this.db.batch([
+      this.db.prepare(`DELETE FROM transcript_segments WHERE meeting_id = ?`).bind(id),
+      this.db.prepare(`DELETE FROM notes WHERE meeting_id = ?`).bind(id),
+      this.db.prepare(`DELETE FROM meetings WHERE id = ?`).bind(id),
+    ]);
+  }
+
   // --- both web and consumer -------------------------------------------
 
   async getMeeting(id: string): Promise<Meeting | null> {

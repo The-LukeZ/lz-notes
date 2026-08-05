@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { invalidateAll } from "$app/navigation";
+  import { goto, invalidateAll } from "$app/navigation";
   import type { PageData } from "./$types";
 
   let { data }: { data: PageData } = $props();
@@ -27,7 +27,11 @@
 
   let savingSpeakers = $state(false);
   let generating = $state(false);
+  let deleting = $state(false);
   let actionError = $state<string | null>(null);
+
+  let transcriptExpanded = $state(false);
+  let notesExpanded = $state(false);
 
   const STATUS_LABELS: Record<string, string> = {
     uploaded: "Uploaded",
@@ -102,6 +106,20 @@
       generating = false;
     }
   }
+
+  async function deleteMeeting() {
+    if (!confirm(`Delete "${meeting.title}"? This can't be undone.`)) return;
+    deleting = true;
+    actionError = null;
+    try {
+      const res = await fetch(`/api/meetings/${meeting.id}`, { method: "DELETE" });
+      if (!res.ok) throw new Error((await res.text()) || `Failed (${res.status})`);
+      await goto("/");
+    } catch (err) {
+      actionError = err instanceof Error ? err.message : String(err);
+      deleting = false;
+    }
+  }
 </script>
 
 <svelte:head><title>{meeting.title} — lz-notes</title></svelte:head>
@@ -109,13 +127,26 @@
 <main class="mx-auto max-w-3xl px-4 py-10">
   <a href="/" class="text-sm text-gray-500 hover:underline">← All meetings</a>
 
-  <header class="mt-3 flex items-center justify-between">
+  <header class="mt-3 flex items-center justify-between gap-3">
     <h1 class="text-2xl font-bold tracking-tight">{meeting.title}</h1>
-    <span class="rounded-full bg-gray-100 px-3 py-1 text-sm text-gray-600">
-      {STATUS_LABELS[meeting.status] ?? meeting.status}
-    </span>
+    <div class="flex shrink-0 items-center gap-2">
+      <span class="rounded-full bg-gray-100 px-3 py-1 text-sm text-gray-600">
+        {STATUS_LABELS[meeting.status] ?? meeting.status}
+      </span>
+      <button
+        class="rounded-md border border-red-200 px-3 py-1.5 text-sm text-red-600 hover:bg-red-50 disabled:opacity-50"
+        onclick={deleteMeeting}
+        disabled={deleting}
+      >
+        {deleting ? "Deleting…" : "Delete"}
+      </button>
+    </div>
   </header>
   <p class="mt-1 text-xs tracking-wide text-gray-400 uppercase">{meeting.meeting_type}</p>
+
+  {#if actionError}
+    <p class="mt-2 text-sm text-red-600">{actionError}</p>
+  {/if}
 
   {#if meeting.status === "failed"}
     <div class="mt-6 rounded-md border border-red-200 bg-red-50 p-4 text-sm text-red-700">
@@ -155,8 +186,16 @@
     </section>
 
     <section class="mt-8">
-      <h2 class="text-lg font-semibold">Transcript</h2>
-      <div class="mt-3 space-y-3">
+      <div class="flex items-center justify-between">
+        <h2 class="text-lg font-semibold">Transcript</h2>
+        <button
+          class="text-sm text-gray-500 hover:underline"
+          onclick={() => (transcriptExpanded = !transcriptExpanded)}
+        >
+          {transcriptExpanded ? "Collapse" : "Expand"}
+        </button>
+      </div>
+      <div class="mt-3 space-y-3 overflow-y-auto" style={transcriptExpanded ? "" : "max-height: 50vh;"}>
         {#each data.segments as segment (segment.id)}
           <p class="text-sm leading-relaxed">
             <span class="font-semibold">{displayName(segment.speaker_label)}:</span>
@@ -178,10 +217,6 @@
         </button>
       </div>
 
-      {#if actionError}
-        <p class="mt-2 text-sm text-red-600">{actionError}</p>
-      {/if}
-
       {#if notes}
         <div class="mt-4 flex gap-2">
           <a
@@ -196,9 +231,16 @@
             class="rounded-md border border-gray-300 px-3 py-1.5 text-sm hover:bg-gray-50"
             href="/api/meetings/{meeting.id}/export/pdf">PDF</a
           >
+          <button
+            class="ml-auto text-sm text-gray-500 hover:underline"
+            onclick={() => (notesExpanded = !notesExpanded)}
+          >
+            {notesExpanded ? "Collapse" : "Expand"}
+          </button>
         </div>
         <pre
-          class="mt-4 rounded-lg border border-gray-200 bg-gray-50 p-4 text-sm whitespace-pre-wrap">{notes}</pre>
+          class="mt-4 overflow-y-auto rounded-lg border border-gray-200 bg-gray-50 p-4 text-sm whitespace-pre-wrap"
+          style={notesExpanded ? "" : "max-height: 50vh;"}>{notes}</pre>
       {/if}
     </section>
   {/if}
