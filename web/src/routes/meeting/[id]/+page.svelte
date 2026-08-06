@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { invalidateAll } from "$app/navigation";
+  import { goto, invalidateAll } from "$app/navigation";
 
   let { data } = $props();
 
@@ -18,6 +18,23 @@
     speakerNames = next;
   });
   const speakerLabels = $derived(Object.keys(speakerNames));
+
+  // Editable transcript text per segment id, synced from server data.
+  let segmentTexts = $state<Record<number, string>>({});
+  $effect(() => {
+    const next: Record<number, string> = {};
+    for (const s of data.segments) next[s.id] = s.text;
+    segmentTexts = next;
+  });
+
+  let instructions = $state("");
+  $effect(() => {
+    instructions = data.meeting.instructions ?? "";
+  });
+
+  let transcriptExpanded = $state(false);
+  let notesExpanded = $state(false);
+  let deleting = $state(false);
 
   // Notes come from the server load; a freshly-generated result overrides that
   // until the next invalidateAll() folds it back into data.notes.
@@ -86,6 +103,51 @@
     }
   }
 
+  async function saveSegmentText(segmentId: number, original: string) {
+    const text = segmentTexts[segmentId];
+    if (text === original) return;
+    actionError = null;
+    try {
+      const res = await fetch(`/api/meetings/${meeting.id}/segments/${segmentId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text }),
+      });
+      if (!res.ok) throw new Error((await res.text()) || `Failed (${res.status})`);
+    } catch (err) {
+      actionError = err instanceof Error ? err.message : String(err);
+    }
+  }
+
+  async function saveInstructions() {
+    if (instructions === (data.meeting.instructions ?? "")) return;
+    actionError = null;
+    try {
+      const res = await fetch(`/api/meetings/${meeting.id}/instructions`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ instructions }),
+      });
+      if (!res.ok) throw new Error((await res.text()) || `Failed (${res.status})`);
+    } catch (err) {
+      actionError = err instanceof Error ? err.message : String(err);
+    }
+  }
+
+  async function deleteMeeting() {
+    if (!confirm("Delete this meeting? This can't be undone.")) return;
+    deleting = true;
+    actionError = null;
+    try {
+      const res = await fetch(`/api/meetings/${meeting.id}`, { method: "DELETE" });
+      if (!res.ok) throw new Error((await res.text()) || `Failed (${res.status})`);
+      await goto("/");
+    } catch (err) {
+      actionError = err instanceof Error ? err.message : String(err);
+      deleting = false;
+    }
+  }
+
   async function generateNotes() {
     generating = true;
     actionError = null;
@@ -114,7 +176,18 @@
       {STATUS_LABELS[meeting.status] ?? meeting.status}
     </span>
   </header>
-  <p class="mt-1 text-xs tracking-wide text-gray-400 uppercase">{meeting.meeting_type}</p>
+  <div class="mt-1 flex items-center justify-between">
+    <p class="text-xs tracking-wide text-gray-400 uppercase">{meeting.meeting_type}</p>
+    {#if meeting.status !== "queued" && meeting.status !== "transcribing"}
+      <button
+        class="text-sm text-red-600 hover:underline disabled:opacity-50"
+        onclick={deleteMeeting}
+        disabled={deleting}
+      >
+        {deleting ? "Deleting…" : "Delete meeting"}
+      </button>
+    {/if}
+  </div>
 
   {#if meeting.status === "failed"}
     <div class="mt-6 rounded-md border border-red-200 bg-red-50 p-4 text-sm text-red-700">
@@ -154,15 +227,40 @@
     </section>
 
     <section class="mt-8">
-      <h2 class="text-lg font-semibold">Transcript</h2>
-      <div class="mt-3 space-y-3">
+      <div class="flex items-center justify-between">
+        <h2 class="text-lg font-semibold">Transcript</h2>
+        <button
+          class="text-sm text-gray-500 hover:underline"
+          onclick={() => (transcriptExpanded = !transcriptExpanded)}
+        >
+          {transcriptExpanded ? "Collapse" : "Expand"}
+        </button>
+      </div>
+      <div class={transcriptExpanded ? "mt-3 space-y-3" : "mt-3 max-h-[50vh] space-y-3 overflow-y-auto"}>
         {#each data.segments as segment (segment.id)}
-          <p class="text-sm leading-relaxed">
+          <div class="text-sm leading-relaxed">
             <span class="font-semibold">{displayName(segment.speaker_label)}:</span>
-            {segment.text}
-          </p>
+            <textarea
+              class="mt-1 field-sizing-content w-full resize-none rounded-md border border-gray-300 px-3 py-2 text-sm"
+              bind:value={segmentTexts[segment.id]}
+              onblur={() => saveSegmentText(segment.id, segment.text)}></textarea>
+          </div>
         {/each}
       </div>
+    </section>
+
+    <section class="mt-8">
+      <h2 class="text-lg font-semibold">Context for notes (optional)</h2>
+      <p class="text-sm text-gray-500">
+        Add clarifications or corrections for the note-generation model — e.g. resolving ambiguous references
+        or fixing mistranscribed terms.
+      </p>
+      <textarea
+        class="mt-2 field-sizing-content w-full resize-none rounded-md border border-gray-300 px-3 py-2 text-sm"
+        bind:value={instructions}
+        onblur={saveInstructions}
+        placeholder="e.g. 'Acme' refers to Acme Corp, our vendor, not the product name."
+        rows="3"></textarea>
     </section>
 
     <section class="mt-8">
@@ -195,9 +293,20 @@
             class="rounded-md border border-gray-300 px-3 py-1.5 text-sm hover:bg-gray-50"
             href="/api/meetings/{meeting.id}/export/pdf">PDF</a
           >
+          {#if notes}
+            <div class="flex flex-1 items-center justify-end">
+              <button
+                class="text-sm text-gray-500 hover:underline"
+                onclick={() => (notesExpanded = !notesExpanded)}
+              >
+                {notesExpanded ? "Collapse" : "Expand"}
+              </button>
+            </div>
+          {/if}
         </div>
+
         <pre
-          class="mt-4 rounded-lg border border-gray-200 bg-gray-50 p-4 text-sm whitespace-pre-wrap">{notes}</pre>
+          class={`mt-4 rounded-lg border border-gray-200 bg-gray-50 p-4 text-sm whitespace-pre-wrap${notesExpanded ? "" : "max-h-[50vh] overflow-y-auto"}`}>{notes}</pre>
       {/if}
     </section>
   {/if}

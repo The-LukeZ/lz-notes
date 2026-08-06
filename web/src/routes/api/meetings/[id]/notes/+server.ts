@@ -22,7 +22,7 @@ export const POST = async ({ params, locals }) => {
 
   const transcript = buildTranscriptText(segments);
   const systemPrompt = systemPromptFor(meeting.meeting_type);
-  const markdown = await generateNotes(env.MISTRAL_API_KEY, systemPrompt, transcript);
+  const markdown = await generateNotes(env.MISTRAL_API_KEY, systemPrompt, transcript, meeting.instructions);
 
   await repo.saveNotes(params.id, markdown);
   return json({ markdown });

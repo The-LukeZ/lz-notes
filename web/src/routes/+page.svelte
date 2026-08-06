@@ -1,7 +1,23 @@
 <script lang="ts">
-  import { goto } from "$app/navigation";
+  import { goto, invalidateAll } from "$app/navigation";
 
   let { data } = $props();
+
+  let deleting = $state<Record<string, boolean>>({});
+
+  async function deleteMeeting(id: string) {
+    if (!confirm("Delete this meeting? This can't be undone.")) return;
+    deleting[id] = true;
+    try {
+      const res = await fetch(`/api/meetings/${id}`, { method: "DELETE" });
+      if (!res.ok) throw new Error((await res.text()) || `Failed (${res.status})`);
+      await invalidateAll();
+    } catch (err) {
+      errorMsg = err instanceof Error ? err.message : String(err);
+    } finally {
+      deleting[id] = false;
+    }
+  }
 
   let title = $state("");
   let meetingType = $state<"meeting" | "learning">("meeting");
@@ -152,11 +168,8 @@
     {:else}
       <ul class="mt-3 divide-y divide-gray-200 rounded-xl border border-gray-200">
         {#each data.meetings as meeting (meeting.id)}
-          <li>
-            <a
-              class="flex items-center justify-between px-4 py-3 hover:bg-gray-50"
-              href="/meeting/{meeting.id}"
-            >
+          <li class="flex items-center justify-between px-4 py-3 hover:bg-gray-50">
+            <a class="flex flex-1 items-center justify-between" href="/meeting/{meeting.id}">
               <span>
                 <span class="font-medium">{meeting.title}</span>
                 <span class="ml-2 text-xs tracking-wide text-gray-400 uppercase">
@@ -167,6 +180,15 @@
                 {STATUS_LABELS[meeting.status] ?? meeting.status}
               </span>
             </a>
+            {#if meeting.status !== "queued" && meeting.status !== "transcribing"}
+              <button
+                class="ml-4 shrink-0 text-sm text-red-600 hover:underline disabled:opacity-50"
+                onclick={() => deleteMeeting(meeting.id)}
+                disabled={deleting[meeting.id]}
+              >
+                {deleting[meeting.id] ? "Deleting…" : "Delete"}
+              </button>
+            {/if}
           </li>
         {/each}
       </ul>

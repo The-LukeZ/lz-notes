@@ -46,6 +46,9 @@ export default {
         console.log(`[consumer] transcription done meeting=${meeting.id} segments=${segments.length}`);
         await repo.insertSegments(meeting.id, segments);
         await repo.updateStatus(meeting.id, "transcribed");
+        await env.AUDIO_BUCKET.delete(meeting.audio_key).catch((err) =>
+          console.error(`[consumer] failed to delete audio meeting=${meeting.id}:`, err)
+        );
         console.log(`[consumer] job done meeting=${meeting.id}`);
 
         msg.ack();

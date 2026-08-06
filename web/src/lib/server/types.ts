@@ -13,6 +13,7 @@ export interface Meeting {
   status: MeetingStatus;
   audio_key: string;
   glossary: string | null;
+  instructions: string | null;
   error: string | null;
   created_at: string;
   updated_at: string;

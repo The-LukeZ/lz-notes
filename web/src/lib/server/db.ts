@@ -82,6 +82,24 @@ export class NotesRepository {
     return row?.markdown ?? null;
   }
 
+  async updateInstructions(meetingId: string, instructions: string | null): Promise<void> {
+    await this.db
+      .prepare(`UPDATE meetings SET instructions = ?, updated_at = datetime('now') WHERE id = ?`)
+      .bind(instructions, meetingId)
+      .run();
+  }
+
+  async updateSegmentText(meetingId: string, segmentId: number, text: string): Promise<void> {
+    await this.db
+      .prepare(`UPDATE transcript_segments SET text = ? WHERE id = ? AND meeting_id = ?`)
+      .bind(text, segmentId, meetingId)
+      .run();
+  }
+
+  async deleteMeeting(id: string): Promise<void> {
+    await this.db.prepare(`DELETE FROM meetings WHERE id = ?`).bind(id).run();
+  }
+
   // --- both web and consumer -------------------------------------------
 
   async getMeeting(id: string): Promise<Meeting | null> {

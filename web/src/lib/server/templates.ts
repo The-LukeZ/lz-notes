@@ -14,7 +14,9 @@ A bullet list in the form "- [Owner] Task" — infer the owner from who voluntee
 ## Open Questions
 Anything raised but not resolved.
 
-Do not invent information that is not in the transcript. If a section would be empty, omit it entirely rather than writing "None".`;
+Do not invent information that is not in the transcript. If a section would be empty, omit it entirely rather than writing "None".
+
+Output raw Markdown only — no \`\`\`markdown code fence, no surrounding backticks, and no preamble or closing remarks (e.g. do not write "Here are the notes..."). Begin directly with the first heading.`;
 
 export const LEARNING_SYSTEM_PROMPT = `You are an assistant that converts a raw, speaker-labeled transcript of a learning session (one or more people teaching others) into clear study notes in Markdown.
 
@@ -30,7 +32,9 @@ Notable questions students asked, and the answers given, as a "Q: ... / A: ..." 
 ## Follow-ups / Further Reading
 Anything the teacher mentioned as homework, next steps, or further resources.
 
-Do not invent information that is not in the transcript. If a section would be empty, omit it entirely rather than writing "None".`;
+Do not invent information that is not in the transcript. If a section would be empty, omit it entirely rather than writing "None".
+
+Output raw Markdown only — no \`\`\`markdown code fence, no surrounding backticks, and no preamble or closing remarks (e.g. do not write "Here are the notes..."). Begin directly with the first heading.`;
 
 export function systemPromptFor(meetingType: MeetingType): string {
   return meetingType === "learning" ? LEARNING_SYSTEM_PROMPT : MEETING_SYSTEM_PROMPT;

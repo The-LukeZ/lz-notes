@@ -12,7 +12,8 @@ interface ChatCompletionResponse {
 export async function generateNotes(
   apiKey: string,
   systemPrompt: string,
-  transcript: string
+  transcript: string,
+  instructions?: string | null
 ): Promise<string> {
   const res = await fetch(CHAT_COMPLETIONS_URL, {
     method: "POST",
@@ -24,9 +25,16 @@ export async function generateNotes(
       model: NOTES_MODEL,
       messages: [
         { role: "system", content: systemPrompt },
+        ...[
+          instructions
+            ? {
+                role: "system",
+                content: `Additional context/clarifications - use these to resolve ambiguity or correct mistranscriptions, but don't invent facts beyond them:\n${instructions}`,
+              }
+            : null,
+        ].filter(Boolean),
         { role: "user", content: transcript },
       ],
-      // TODO: maybe add reasoning_effort: "medium",
     }),
   });
 
