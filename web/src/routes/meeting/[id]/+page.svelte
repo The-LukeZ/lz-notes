@@ -306,7 +306,7 @@
         </div>
 
         <pre
-          class={`mt-4 rounded-lg border border-gray-200 bg-gray-50 p-4 text-sm whitespace-pre-wrap${notesExpanded ? "" : "max-h-[50vh] overflow-y-auto"}`}>{notes}</pre>
+          class={`mt-4 rounded-lg border border-gray-200 bg-gray-50 p-4 text-sm whitespace-pre-wrap ${notesExpanded ? "" : "max-h-[50vh] overflow-y-auto"}`}>{notes}</pre>
       {/if}
     </section>
   {/if}
